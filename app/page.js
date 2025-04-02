@@ -123,8 +123,6 @@ export default function Home() {
 
   const skipToNextSong = () => {
     if (timeoutId) clearTimeout(timeoutId)
-    currentAudioRef.current.pause()
-    nextAudioRef.current.pause()
     playNextSong()
   }
 
