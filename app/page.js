@@ -28,10 +28,6 @@ function LoginScreen({ onLogin }) {
 export default function Home() {
   const [loggedIn, setLoggedIn] = useState(false)
   const [currentSong, setCurrentSong] = useState(null)
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const currentAudioRef = useRef(new Audio())
-  const nextAudioRef = useRef(new Audio())
   const [preloadedTracks, setPreloadedTracks] = useState([])
   const [timeoutId, setTimeoutId] = useState(null)
 
@@ -51,24 +47,6 @@ export default function Home() {
     return array;
   }
 
-  useEffect(() => {
-    const currentAudio = currentAudioRef.current
-    const nextAudio = nextAudioRef.current
-
-    currentAudio.onended = playNextSong
-    nextAudio.oncanplaythrough = () => {
-      if (!nextAudio.preloadComplete) {
-        nextAudio.preloadComplete = true
-        preloadNextTrack()
-      }
-    }
-
-    return () => {
-      currentAudio.pause()
-      nextAudio.pause()
-      if (timeoutId) clearTimeout(timeoutId)
-    }
-  }, [])
 
   useEffect(() => {
     if (currentSong) {
@@ -137,15 +115,7 @@ export default function Home() {
       setCurrentSong(preloadedTracks[0])
       setPreloadedTracks(prev => prev.slice(1))
       
-      // Swap audio references
-      [currentAudioRef.current, nextAudioRef.current] = [nextAudioRef.current, currentAudioRef.current]
-      
-      // Reset preload flag
-      nextAudioRef.current.preloadComplete = false
-      
-      setIsPlaying(true)
     } else {
-      setIsPlaying(false)
       setCurrentSong(null)
     }
   }
