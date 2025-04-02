@@ -30,6 +30,8 @@ export default function Home() {
   const [currentSong, setCurrentSong] = useState(null)
   const [preloadedTracks, setPreloadedTracks] = useState([])
   const [timeoutId, setTimeoutId] = useState(null)
+  const [skipInterval, setSkipInterval] = useState(5000); // 5 seconds default
+  const [showSettings, setShowSettings] = useState(false);
 
   useEffect(() => {
     const token = getTokenFromUrl()
@@ -58,7 +60,7 @@ export default function Home() {
       // Set timeout to skip after 3 seconds
       const newTimeoutId = setTimeout(() => {
         playNextSong()
-      }, 5000)
+      }, skipInterval)
 
       setTimeoutId(newTimeoutId)
     }
@@ -66,7 +68,7 @@ export default function Home() {
     return () => {
       if (timeoutId) clearTimeout(timeoutId)
     }
-  }, [currentSong])
+  }, [currentSong, skipInterval])
 
   const getTokenFromUrl = () => {
     return window.location.hash
@@ -132,6 +134,13 @@ export default function Home() {
     }
   }, [loggedIn]);
 
+  const changeInterval = (increase) => {
+    setSkipInterval(current => {
+      const newInterval = increase ? current + 500 : Math.max(500, current - 500);
+      return newInterval;
+    });
+  }
+
   if (!loggedIn) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-purple-400 via-pink-500 to-red-500">
@@ -143,7 +152,41 @@ export default function Home() {
   return (
     <div className="text-black flex flex-col items-center justify-center min-h-screen bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 p-8">
       <div className="bg-white rounded-lg shadow-md p-8 w-full max-w-lg">
-        <h1 className="text-3xl font-bold text-center mb-6">5s Song Shuffle</h1>
+        <div className="flex justify-between items-center mb-6">
+          <div className="w-6"></div>
+          <h1 className="text-3xl font-bold">Song Shuffle</h1>
+          <button
+            onClick={() => setShowSettings(!showSettings)}
+            className="text-[#1DB954] hover:text-[#1ed760] font-bold p-2 rounded-full"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className={`h-6 w-6 transition-transform ${showSettings ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+        </div>
+        
+        {showSettings && (
+          <div className="flex justify-center items-center gap-4 mb-6">
+            <button
+              onClick={() => changeInterval(false)}
+              className="bg-[#1DB954] hover:bg-[#1ed760] text-white font-bold py-2 px-4 rounded-full"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <span className="text-xl font-bold">{skipInterval / 1000}s</span>
+            <button
+              onClick={() => changeInterval(true)}
+              className="bg-[#1DB954] hover:bg-[#1ed760] text-white font-bold py-2 px-4 rounded-full"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+        )}
+
         {currentSong && (
           <div className="text-center">
             <img
